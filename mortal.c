@@ -53,6 +53,8 @@ int main(void)
 
 void solver(struct level *arg)
 {
+    bool testUp(struct level *arg);
+    void newPath(struct path *arg);
     struct level *tmp = arg;
     while(1)
     {
@@ -60,7 +62,7 @@ void solver(struct level *arg)
             tmp->curPosition++;
         if( testUp(tmp) )
         {
-            newPath(tmp->traversal);
+            newPath(*(tmp->traversal));
             while( testUp(tmp) )
             {
             }
