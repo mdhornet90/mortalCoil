@@ -62,7 +62,7 @@ void solver(struct level *arg)
             tmp->curPosition++;
         if( testUp(tmp) )
         {
-            newPath(*(tmp->traversal));
+            newPath(&(tmp->traversal));
             while( testUp(tmp) )
             {
             }
