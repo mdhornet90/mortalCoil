@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
-struct path
+typedef struct
 {
     int horizX;
     int vertY;
@@ -10,16 +11,16 @@ struct path
     int lastDir;
     int spacesLeft;
     char *board;
-};
+}path;
 
 int main(void)
 {
     //Prototypes
-    void initBoard(struct path* arg);
-    void printBoard(struct path *arg);
-    void solver(struct path *arg);
+    void initBoard(path* arg);
+    void printBoard(path *arg);
+    void solver(path *arg);
     //Variables
-    struct path level, reset;
+    path level, reset;
     int area, i = 0;
 
     printf("Receiving board...\n");
@@ -36,7 +37,7 @@ int main(void)
     level.direction[3] = -level.horizX;
 
     initBoard(&level);
-    reset = level;
+    memcpy(&reset, &level, sizeof(path)); //Deep copy
 
     while( 1 ) //Will exit loop when path has been completely traversed
     {
@@ -48,25 +49,25 @@ int main(void)
         if( level.spacesLeft == 0 )
             break;
         else
-            level = reset;
+            memcpy(&level, &reset, sizeof(path));
         level.lastDir++;
         solver(&level);
         if( level.spacesLeft == 0 )
             break;
         else
-            level = reset;
+            memcpy(&level, &reset, sizeof(path));
     }
 
     return 0;
 }
 
-void solver(struct path *arg)
+void solver(path *arg)
 {
 }
 
-void initBoard(struct path* arg)
+void initBoard(path* arg)
 {
-    struct path *tmp = arg;
+    path *tmp = arg;
     tmp->spacesLeft = 0;
 
     tmp->horizX += 2;                                   //Set new board dimensions
@@ -101,10 +102,10 @@ void initBoard(struct path* arg)
     return;
 }
 
-void printBoard(struct path *arg)
+void printBoard(path *arg)
 {
     int i = 0, j;
-    struct path *tmp = arg;
+    path *tmp = arg;
 
     for( j = 0; j < tmp->vertY; j++ ) //Parsing the board for printing so it appears as a neat 2D array
     {
