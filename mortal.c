@@ -19,7 +19,7 @@ int main(void)
     void printBoard(struct path *arg);
     void solver(struct path *arg);
     //Variables
-    struct path level;
+    struct path level, reset;
     int area, i = 0;
 
     printf("Receiving board...\n");
@@ -36,8 +36,9 @@ int main(void)
     level.direction[3] = -level.horizX;
 
     initBoard(&level);
+    reset = level;
 
-    while( level.spacesLeft != 0 ) //Will exit loop when path has been completely traversed
+    while( 1 ) //Will exit loop when path has been completely traversed
     {
         while(level.board[i] == 'X') //Finds its first starting position the first time through
             i++;
@@ -46,8 +47,14 @@ int main(void)
         solver(&level);
         if( level.spacesLeft == 0 )
             break;
+        else
+            level = reset;
         level.lastDir++;
         solver(&level);
+        if( level.spacesLeft == 0 )
+            break;
+        else
+            level = reset;
     }
 
     return 0;
