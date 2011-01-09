@@ -8,6 +8,7 @@ typedef struct
     int horizX;
     int vertY;
     int direction[4];
+    int curPos;
     int lastDir;
     int spacesLeft;
     char *board;
@@ -21,7 +22,7 @@ int main(void)
     void solver(path *arg);
     //Variables
     path level, reset;
-    int area, i = 0;
+    int area;
 
     printf("Receiving board...\n");
     scanf("%i %i", &level.horizX, &level.vertY); //Takes its inputs from the command curl -s http://www.hacker.org/coil/ |
@@ -44,10 +45,10 @@ int main(void)
     reset.board = (char *)malloc(area * sizeof(char));
     strcpy(reset.board, level.board);
 
-    while( i < (level.horizX * level.vertY) ) //Will exit loop when path has been completely traversed,
+    while( level.curPos < (level.horizX * level.vertY) ) //Will exit loop when path has been completely traversed,
     {                                         //or when all possible starting points have been exhausted
         while(level.board[i] == 'X') //Finds its first starting position the first time through
-            i++;
+            level.curPos++;
 
         level.lastDir = 0;
         solver(&level);
@@ -71,7 +72,7 @@ int main(void)
             level.board = (char *)malloc(area * sizeof(char));*/
             strcpy(level.board, reset.board);
         }
-        i++;
+        level.curPos++;
     }
 
     return 0;
@@ -86,6 +87,29 @@ void solver(path *arg)
     tempLevel.board = (char *)malloc(area * sizeof(char));
     strcpy(tempLevel.board,arg->board);
 
+    if( tempLevel.lastDir == 0 || tempLevel.lastDir == 2 )
+    {
+        if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[1] != 'X' )
+        {
+            while ( tempLevel.board[curPos] != 'X' )
+            {
+                tempLevel.board[curPos] = '-';
+                curPos += tempLevel.direction[1];
+                tempLevel.spacesLeft--;
+            }
+            solver(&tempLevel);
+        }
+        else if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[3] != 'X' )
+        {
+            while ( tempLevel.board[curPos] != 'X' )
+            {
+                tempLevel.board[curPos] = '-';
+                curPos += tempLevel.direction[3];
+                tempLevel.spacesLeft--;
+            }
+            solver(&tempLevel);
+        }
+    }
     free(tempLevel.board);
     return;
 }
@@ -94,6 +118,7 @@ void initBoard(path* arg)
 {
     path *tmp = arg;
     tmp->spacesLeft = 0;
+    tmp->curPos = 0;
 
     tmp->horizX += 2;                                   //Set new board dimensions
     tmp->vertY += 2;
