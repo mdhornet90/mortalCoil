@@ -114,6 +114,34 @@ void solver(path *arg)
             solver(&tempLevel);
         }
     }
+
+    else if( tempLevel.lastDir == 1 || tempLevel.lastDir == 3 )
+    {
+        if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[0] != 'X' )
+        {
+            while ( tempLevel.board[tempLevel.curPos] != 'X' )
+            {
+                tempLevel.board[tempLevel.curPos] = '-';
+                tempLevel.curPos += tempLevel.direction[0];
+                tempLevel.spacesLeft--;
+            }
+            tempLevel.curPos += tempLevel.direction[2];
+            tempLevel.lastDir = 0;
+            solver(&tempLevel);
+        }
+        else if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[2] != 'X' )
+        {
+            while ( tempLevel.board[tempLevel.curPos] != 'X' )
+            {
+                tempLevel.board[tempLevel.curPos] = '-';
+                tempLevel.curPos += tempLevel.direction[2];
+                tempLevel.spacesLeft--;
+            }
+            tempLevel.curPos += tempLevel.direction[0];
+            tempLevel.lastDir = 2;
+            solver(&tempLevel);
+        }
+    }
     free(tempLevel.board);
     return;
 }
