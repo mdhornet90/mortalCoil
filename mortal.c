@@ -47,7 +47,7 @@ int main(void)
 
     while( level.curPos < (level.horizX * level.vertY) ) //Will exit loop when path has been completely traversed,
     {                                         //or when all possible starting points have been exhausted
-        while(level.board[i] == 'X') //Finds its first starting position the first time through
+        while(level.board[level.curPos] == 'X') //Finds its first starting position the first time through
             level.curPos++;
 
         level.lastDir = 0;
@@ -91,20 +91,20 @@ void solver(path *arg)
     {
         if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[1] != 'X' )
         {
-            while ( tempLevel.board[curPos] != 'X' )
+            while ( tempLevel.board[tempLevel.curPos] != 'X' )
             {
-                tempLevel.board[curPos] = '-';
-                curPos += tempLevel.direction[1];
+                tempLevel.board[tempLevel.curPos] = '-';
+                tempLevel.curPos += tempLevel.direction[1];
                 tempLevel.spacesLeft--;
             }
             solver(&tempLevel);
         }
         else if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[3] != 'X' )
         {
-            while ( tempLevel.board[curPos] != 'X' )
+            while ( tempLevel.board[tempLevel.curPos] != 'X' )
             {
-                tempLevel.board[curPos] = '-';
-                curPos += tempLevel.direction[3];
+                tempLevel.board[tempLevel.curPos] = '-';
+                tempLevel.curPos += tempLevel.direction[3];
                 tempLevel.spacesLeft--;
             }
             solver(&tempLevel);
