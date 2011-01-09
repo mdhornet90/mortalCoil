@@ -36,11 +36,16 @@ int main(void)
     level.direction[2] = -1;
     level.direction[3] = -level.horizX;
 
+    printBoard(&level);
     initBoard(&level);
-    memcpy(&reset, &level, sizeof(path)); //Deep copy
+    area = level.horizX * level.vertY;
 
-    while( 1 ) //Will exit loop when path has been completely traversed
-    {
+    memcpy(&reset, &level, sizeof(path)); //Deep copy
+    reset.board = (char *)malloc(area * sizeof(char));
+    strcpy(reset.board, level.board);
+
+    while( i < (level.horizX * level.vertY) ) //Will exit loop when path has been completely traversed,
+    {                                         //or when all possible starting points have been exhausted
         while(level.board[i] == 'X') //Finds its first starting position the first time through
             i++;
 
@@ -49,13 +54,24 @@ int main(void)
         if( level.spacesLeft == 0 )
             break;
         else
-            memcpy(&level, &reset, sizeof(path));
-        level.lastDir++;
+        {
+            /*memcpy(&level, &reset, sizeof(path));
+            free(level.board);
+            level.board = (char *)malloc(area * sizeof(char));*/
+            strcpy(level.board, reset.board);
+        }
+        level.lastDir = 1;
         solver(&level);
         if( level.spacesLeft == 0 )
             break;
         else
-            memcpy(&level, &reset, sizeof(path));
+        {
+            /*memcpy(&level, &reset, sizeof(path));
+            free(level.board);
+            level.board = (char *)malloc(area * sizeof(char));*/
+            strcpy(level.board, reset.board);
+        }
+        i++;
     }
 
     return 0;
@@ -63,6 +79,15 @@ int main(void)
 
 void solver(path *arg)
 {
+    path tempLevel;
+    int area = arg->horizX * arg->vertY;
+
+    memcpy(&tempLevel, arg, sizeof(path));
+    tempLevel.board = (char *)malloc(area * sizeof(char));
+    strcpy(tempLevel.board,arg->board);
+
+    free(tempLevel.board);
+    return;
 }
 
 void initBoard(path* arg)
