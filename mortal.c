@@ -97,6 +97,8 @@ void solver(path *arg)
                 tempLevel.curPos += tempLevel.direction[1];
                 tempLevel.spacesLeft--;
             }
+            tempLevel.curPos += tempLevel.direction[3];
+            tempLevel.lastDir = 1;
             solver(&tempLevel);
         }
         else if ( tempLevel.board[tempLevel.curPos] + tempLevel.direction[3] != 'X' )
@@ -107,6 +109,8 @@ void solver(path *arg)
                 tempLevel.curPos += tempLevel.direction[3];
                 tempLevel.spacesLeft--;
             }
+            tempLevel.curPos += tempLevel.direction[1];
+            tempLevel.lastDir = 3;
             solver(&tempLevel);
         }
     }
