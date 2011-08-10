@@ -13,6 +13,7 @@ typedef struct
     int lastDir;
     int spacesLeft;
     int *directionsUsed;
+    int firstMove;
     char *board;
 }path;
 
@@ -26,17 +27,18 @@ int main(void)
     path level, reset;
     int x, y, i;
     int area, boardStartFlag = 0;
+    FILE *filePtr;
 
+    system("curl -s \"http://www.hacker.org/coil/?name=Toddler%20Stomper&spw=e2f5b99f7599f74c83eb5b18aeb9bbf1\" | grep -m 1 \"FlashVars\" | grep -o \"x[^\\\"]*\" > ~/Desktop/Programming/C/MortalCoil/test.txt");
+    filePtr = fopen("test.txt","rb");
     printf("Receiving board...\n");
-    scanf("%i %i", &level.horizX, &level.vertY); //Takes its inputs from the command curl -s "http://www.hacker.org/coil/?name=Toddler%20Stomper&spw=e2f5b99f7599f74c83eb5b18aeb9bbf1"
+    fscanf(filePtr,"x=%i&y=%i", &level.horizX, &level.vertY); //Takes its inputs from the command curl -s "http://www.hacker.org/coil/?name=Toddler%20Stomper&spw=e2f5b99f7599f74c83eb5b18aeb9bbf1"
                                                  //| grep -m 1 "FlashVars" | grep -o "x[^\"]*"| sed "s/[^0-9.X]\+/ /g"|./mortal |
                                                  //curl -s "http://www.hacker.org/coil/?name=Toddler%20Stomper&spw=e2f5b99f7599f74c83eb5b18aeb9bbf1&`cat`" | grep "Level: [0-9]\+" -o
-
     area = level.horizX * level.vertY;
 
     level.board = (char*)malloc(area * sizeof(char)); //Allocate enough spaces for initial board (to be overwritten later)
-    scanf("%s", level.board);
-
+    fscanf(filePtr,"&board=%s", level.board);
     initBoard(&level);
     level.directionsUsed = (int *)malloc(level.spacesLeft * sizeof(int));
     printf("\nInitial Board:\n");
@@ -59,6 +61,7 @@ int main(void)
             level.curPos++;
 
         level.lastDir = 0;
+        printf("\n Starting Position: %i\n", level.curPos);
         solver(&level);
         if( level.spacesLeft == 0 )
             break;
@@ -81,7 +84,7 @@ int main(void)
 
     for( y = 0; y < level.vertY; y++ )
     {
-        for( x; x < ( level.horizX * (y + 1) ); x++ )
+        for( ; x < ( level.horizX * (y + 1) ); x++ )
             if( level.board[x] == '*' )
             {
                 boardStartFlag = 1;
@@ -94,7 +97,7 @@ int main(void)
     x = x % level.horizX - 1;
     y--;
 
-    printf("x=%i&y=%i&path=", x, y);
+    printf("http://www.hacker.org/coil/index.php?name=Toddler%%20Stomper&spw=e2f5b99f7599f74c83eb5b18aeb9bbf1&path=");
     for ( i = level.usedSpacesCounter -1; i > 0; i-- )
         switch( level.directionsUsed[i] )
         {
@@ -113,7 +116,7 @@ int main(void)
             default:
                 printf(" ");
         }
-        printf("\n");
+        printf("&x=%i&y=%i\n",x,y);
 
     return 0;
 }
@@ -124,7 +127,7 @@ void solver(path *arg)
     void printBoard(path* arg);
     //variables
     path tempLevel, *tmp = arg;
-    int area = arg->horizX * arg->vertY, firstTime = 1;
+    int area = arg->horizX * arg->vertY, firstTime = 1, done = 0;
 
     memcpy(&tempLevel, arg, sizeof(path));
     tempLevel.board = (char *)malloc(area * sizeof(char));
@@ -132,69 +135,109 @@ void solver(path *arg)
 
     if( tempLevel.lastDir == 0 || tempLevel.lastDir == 2 )
     {
-        if ( tempLevel.board[tempLevel.curPos + tempLevel.direction[1]] != 'X' && tempLevel.board[tempLevel.curPos + tempLevel.direction[1]] != '-' )
+        while ( done <= 2 )
         {
-            while ( tempLevel.board[tempLevel.curPos] != 'X' || (tempLevel.board[tempLevel.curPos] != '-' && firstTime == 1) )
+            if( tempLevel.board[tempLevel.curPos + tempLevel.direction[1]] == '.' )
             {
-                if ( !firstTime || tempLevel.board[tempLevel.curPos] == '.' )
-                    tempLevel.spacesLeft--;
-                tempLevel.board[tempLevel.curPos] = '-';
-                tempLevel.curPos += tempLevel.direction[1];
-                firstTime = 0;
-            }
-            tempLevel.curPos += tempLevel.direction[3];
-            tempLevel.lastDir = 1;
-            printBoard(&tempLevel);
-            solver(&tempLevel);
-        }
-        else if ( tempLevel.board[tempLevel.curPos + tempLevel.direction[3]] != 'X' && tempLevel.board[tempLevel.curPos + tempLevel.direction[3]] != '-' )
-        {
-            while ( tempLevel.board[tempLevel.curPos] != 'X' || (tempLevel.board[tempLevel.curPos] != '-' && firstTime == 1) )
-            {
-                if ( !firstTime || tempLevel.board[tempLevel.curPos] == '.' )
-                    tempLevel.spacesLeft--;
-                tempLevel.board[tempLevel.curPos] = '-';
+                tempLevel.board[tempLevel.curPos] = '.';
+
+                while( tempLevel.board[tempLevel.curPos] == '.' )
+                {
+                    if ( !firstTime || tempLevel.firstMove )
+                        tempLevel.spacesLeft--;
+                    if ( tempLevel.firstMove )
+                    {
+                        tempLevel.firstMove = 0;
+                        tempLevel.board[tempLevel.curPos] = '*';
+                    }
+                    else
+                        tempLevel.board[tempLevel.curPos] = '-';
+                    firstTime = 0;
+                    tempLevel.curPos += tempLevel.direction[1];
+                }
                 tempLevel.curPos += tempLevel.direction[3];
-                firstTime = 0;
+                tempLevel.lastDir = 1;
+                printBoard(&tempLevel);
+                solver(&tempLevel);
             }
-            tempLevel.curPos += tempLevel.direction[1];
-            tempLevel.lastDir = 3;
-            printBoard(&tempLevel);
-            solver(&tempLevel);
+            done++;
+            if( tempLevel.board[tempLevel.curPos + tempLevel.direction[3]] == '.' )
+            {
+                tempLevel.board[tempLevel.curPos] = '.';
+                while( tempLevel.board[tempLevel.curPos] == '.' )
+                {
+                    if ( !firstTime || tempLevel.firstMove )
+                        tempLevel.spacesLeft--;
+                    if ( tempLevel.firstMove )
+                    {
+                        tempLevel.firstMove = 0;
+                        tempLevel.board[tempLevel.curPos] = '*';
+                    }
+                    else
+                        tempLevel.board[tempLevel.curPos] = '-';
+                    firstTime = 0;
+                    tempLevel.curPos += tempLevel.direction[3];
+                }
+                tempLevel.curPos += tempLevel.direction[1];
+                tempLevel.lastDir = 3;
+                printBoard(&tempLevel);
+                solver(&tempLevel);
+            }
+            done++;
         }
     }
-
     else if( tempLevel.lastDir == 1 || tempLevel.lastDir == 3 )
     {
-        if ( tempLevel.board[tempLevel.curPos + tempLevel.direction[0]] != 'X' && tempLevel.board[tempLevel.curPos + tempLevel.direction[0]] != '-' )
+        done = 0;
+        while ( done <= 2 )
         {
-            while ( tempLevel.board[tempLevel.curPos] != 'X' || (tempLevel.board[tempLevel.curPos] != '-' && firstTime == 1) )
+            if( tempLevel.board[tempLevel.curPos + tempLevel.direction[0]] == '.' )
             {
-                if ( !firstTime || tempLevel.board[tempLevel.curPos] == '.' )
-                    tempLevel.spacesLeft--;
-                tempLevel.board[tempLevel.curPos] = '-';
-                tempLevel.curPos += tempLevel.direction[0];
-                firstTime = 0;
-            }
-            tempLevel.curPos += tempLevel.direction[2];
-            tempLevel.lastDir = 0;
-            printBoard(&tempLevel);
-            solver(&tempLevel);
-        }
-        else if ( tempLevel.board[tempLevel.curPos + tempLevel.direction[2]] != 'X' && tempLevel.board[tempLevel.curPos + tempLevel.direction[2]] != '-' )
-        {
-            while ( tempLevel.board[tempLevel.curPos] != 'X' || (tempLevel.board[tempLevel.curPos] != '-' && firstTime == 1) )
-            {
-                if ( !firstTime || tempLevel.board[tempLevel.curPos] == '.' )
-                    tempLevel.spacesLeft--;
-                tempLevel.board[tempLevel.curPos] = '-';
+            tempLevel.board[tempLevel.curPos] = '.';
+
+                while( tempLevel.board[tempLevel.curPos] == '.' )
+                {
+                    if ( !firstTime || tempLevel.firstMove )
+                        tempLevel.spacesLeft--;
+                    if ( tempLevel.firstMove )
+                    {
+                        tempLevel.firstMove = 0;
+                        tempLevel.board[tempLevel.curPos] = '*';
+                    }
+                    else
+                        tempLevel.board[tempLevel.curPos] = '-';
+                    firstTime = 0;
+                    tempLevel.curPos += tempLevel.direction[0];
+                }
                 tempLevel.curPos += tempLevel.direction[2];
-                firstTime = 0;
+                tempLevel.lastDir = 0;
+                printBoard(&tempLevel);
+                solver(&tempLevel);
             }
-            tempLevel.curPos += tempLevel.direction[0];
-            tempLevel.lastDir = 2;
-            printBoard(&tempLevel);
-            solver(&tempLevel);
+            done++;
+            if( tempLevel.board[tempLevel.curPos + tempLevel.direction[2]] == '.' )
+            {
+                tempLevel.board[tempLevel.curPos] = '.';
+                while( tempLevel.board[tempLevel.curPos] == '.' )
+                {
+                    if ( !firstTime || tempLevel.firstMove )
+                        tempLevel.spacesLeft--;
+                    if ( tempLevel.firstMove )
+                    {
+                        tempLevel.firstMove = 0;
+                        tempLevel.board[tempLevel.curPos] = '*';
+                    }
+                    else
+                        tempLevel.board[tempLevel.curPos] = '-';
+                    firstTime = 0;
+                    tempLevel.curPos += tempLevel.direction[2];
+                }
+                tempLevel.curPos += tempLevel.direction[0];
+                tempLevel.lastDir = 2;
+                printBoard(&tempLevel);
+                solver(&tempLevel);
+            }
+            done++;
         }
     }
     if ( tempLevel.spacesLeft == 0 )
@@ -205,6 +248,8 @@ void solver(path *arg)
         tmp->usedSpacesCounter = tempLevel.usedSpacesCounter;
         tmp->spacesLeft = 0;
     }
+    //tmp->board[tmp->curPos] = '.';
+    printf("\nUndoing...current position is %i...\n", tempLevel.curPos);
     free(tempLevel.board);
     return;
 }
@@ -215,6 +260,7 @@ void initBoard(path* arg)
     tmp->spacesLeft = 0;
     tmp->curPos = 0;
     tmp->usedSpacesCounter = 0;
+    tmp->firstMove = 1;
 
     tmp->horizX += 2;                                   //Set new board dimensions
     tmp->vertY += 2;
@@ -234,7 +280,7 @@ void initBoard(path* arg)
         tempBoard[i] = 'X';
     }
 
-    for ( i; i < newArea; i++ ) //All X's as the bottom row
+    for (; i < newArea; i++ ) //All X's as the bottom row
         tempBoard[i] = 'X';
 
     free(tmp->board); //Prevent memory leaks
@@ -258,7 +304,7 @@ void printBoard(path *arg)
     for( j = 0; j < tmp->vertY; j++ ) //Parsing the board for printing so it appears as a neat 2D array
     {
         printf("    ");
-        for( i; i < tmp->horizX * (j + 1); i++ )
+        for(; i < tmp->horizX * (j + 1); i++ )
             printf("%c ", tmp->board[i]);
         printf("\n");
     }
